@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Entreno">
+<title>Diario de Entrenamiento</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    min-height: 100vh;
+    background: #0a0a0a;
+    color: #e8e0d5;
+    font-family: Georgia, serif;
+    padding-bottom: 80px;
+  }
+  .header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+    border-bottom: 1px solid #2a2a2a;
+    padding: 52px 20px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header p { color: #8a7a6a; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #e8e0d5; letter-spacing: 0.5px; }
+  .container { max-width: 520px; margin: 0 auto; padding: 16px 20px 0; }
+  .tabs { display: flex; gap: 4px; background: #111; border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+  .tab {
+    flex: 1; padding: 8px 0; border: none; border-radius: 7px;
+    background: transparent; color: #8a7a6a;
+    font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .tab.active { background: #c8a96e; color: #0a0a0a; font-weight: 700; }
+  .section-label { color: #8a7a6a; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .routine-btns { display: flex; gap: 8px; margin-bottom: 20px; }
+  .routine-btn {
+    width: 48px; height: 48px; border: 1px solid #2a2a2a;
+    border-radius: 10px; background: transparent;
+    color: #5a5a5a; font-family: inherit; font-size: 18px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .routine-btn.active { border-color: #c8a96e; background: rgba(200,169,110,0.13); color: #c8a96e; }
+  .exercises { display: flex; flex-direction: column; gap: 12px; }
+  .ex-card {
+    background: #141414; border: 1px solid #222;
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .ex-name { font-size: 15px; font-weight: 600; color: #e8e0d5; margin-bottom: 2px; }
+  .ex-meta { font-size: 12px; color: #5a5a5a; margin-bottom: 2px; }
+  .ex-note { font-size: 11px; color: #7a6a5a; font-style: italic; margin-bottom: 8px; }
+  .ex-input-row { display: flex; align-items: center; gap: 10px; }
+  .ex-input {
+    flex: 1; padding: 8px 12px;
+    background: #1e1e1e; border: 1px solid #333;
+    border-radius: 8px; color: #e8e0d5;
+    font-family: inherit; font-size: 16px;
+    outline: none; width: 100%;
+  }
+  .ex-prev { text-align: right; }
+  .ex-prev-label { font-size: 10px; color: #5a5a5a; letter-spacing: 1px; }
+  .ex-prev-val { font-size: 15px; color: #c8a96e; font-weight: 600; }
+  textarea {
+    width: 100%; padding: 10px 12px; margin-top: 16px;
+    background: #141414; border: 1px solid #222;
+    border-radius: 10px; color: #e8e0d5;
+    font-family: inherit; font-size: 13px;
+    resize: none; outline: none;
+  }
+  .save-btn {
+    width: 100%; margin-top: 12px; padding: 14px;
+    background: #c8a96e; border: none; border-radius: 10px;
+    color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px;
+  }
+  .save-btn.saved { background: #2a4a2a; color: #6aaa6a; }
+  .history-list { display: flex; flex-direction: column; gap: 14px; }
+  .hist-card { background: #141414; border: 1px solid #222; border-radius: 12px; padding: 14px 16px; }
+  .hist-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .routine-badge {
+    background: rgba(200,169,110,0.13); border: 1px solid rgba(200,169,110,0.27);
+    border-radius: 6px; padding: 2px 10px;
+    color: #c8a96e; font-size: 13px; font-weight: 700;
+  }
+  .hist-date { color: #5a5a5a; font-size: 12px; }
+  .weights-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .weight-chip { background: #1e1e1e; border-radius: 7px; padding: 5px 10px; }
+  .weight-chip-name { font-size: 10px; color: #5a5a5a; }
+  .weight-chip-val { font-size: 14px; color: #e8e0d5; font-weight: 600; }
+  .hist-notes { margin-top: 10px; font-size: 12px; color: #7a6a5a; font-style: italic; border-top: 1px solid #222; padding-top: 8px; }
+  .progress-section { margin-bottom: 28px; }
+  .progress-label { color: #c8a96e; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px; font-weight: 700; }
+  .prog-cards { display: flex; flex-direction: column; gap: 8px; }
+  .prog-card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 12px 14px; }
+  .prog-card-empty { background: #141414; border: 1px solid #1e1e1e; border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .prog-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .prog-name { font-size: 14px; color: #e8e0d5; }
+  .prog-sessions { font-size: 11px; color: #5a5a5a; margin-top: 2px; }
+  .prog-weight { font-size: 18px; color: #c8a96e; font-weight: 700; text-align: right; }
+  .prog-diff { font-size: 11px; margin-top: 2px; text-align: right; }
+  .prog-diff.up { color: #6aaa6a; }
+  .prog-diff.down { color: #aa6a6a; }
+  .mini-bars { display: flex; gap: 4px; align-items: flex-end; height: 32px; }
+  .mini-bar { flex: 1; border-radius: 3px; background: #2a2a2a; transition: height 0.3s; }
+  .mini-bar.latest { background: #c8a96e; }
+  .empty-state { color: #5a5a5a; text-align: center; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="max-width:520px;margin:0 auto">
+    <p>Diario de</p>
+    <h1>Entrenamiento</h1>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('log')">Registrar</button>
+    <button class="tab" onclick="showTab('history')">Historial</button>
+    <button class="tab" onclick="showTab('progress')">Progresión</button>
+  </div>
+
+  <!-- LOG -->
+  <div id="tab-log">
+    <p class="section-label">Día de rutina</p>
+    <div class="routine-btns">
+      <button class="routine-btn active" onclick="selectRoutine('A')">A</button>
+      <button class="routine-btn" onclick="selectRoutine('B')">B</button>
+      <button class="routine-btn" onclick="selectRoutine('C')">C</button>
+    </div>
+    <div class="exercises" id="exercise-list"></div>
+    <textarea id="session-notes" rows="3" placeholder="Notas del entreno (opcional)..."></textarea>
+    <button class="save-btn" id="save-btn" onclick="saveSession()">Guardar sesión</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="tab-history" style="display:none">
+    <div id="history-list"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="tab-progress" style="display:none">
+    <div id="progress-content"></div>
+  </div>
+</div>
+
+<script>
+const ROUTINES = {
+  A: [
+    { id:"squat",   name:"Sentadilla trasera",          sets:4, reps:"5",   rest:"90s", note:"Carga alta, últimas 2 reps que cuesten" },
+    { id:"bench",   name:"Press banca con barra",        sets:3, reps:"8",   rest:"90s", note:"Tempo 3-1-1" },
+    { id:"row",     name:"Remo con barra",               sets:3, reps:"8",   rest:"90s", note:"Movimiento desde codos y espalda alta" },
+    { id:"dips",    name:"Dips lastrados",               sets:3, reps:"10",  rest:"90s", note:"Cinturón porta-discos o mancuerna" },
+    { id:"goblet",  name:"Goblet squat (finisher)",      sets:3, reps:"15",  rest:"45s", note:"Peso moderado, ritmo alto" },
+  ],
+  B: [
+    { id:"rdl",     name:"Peso muerto rumano",           sets:4, reps:"6",   rest:"90s", note:"Control en la bajada" },
+    { id:"pullup",  name:"Dominadas lastradas",          sets:4, reps:"6",   rest:"90s", note:"Rango completo" },
+    { id:"ohp",     name:"Press militar",                sets:3, reps:"8",   rest:"90s", note:"De pie, activación core" },
+    { id:"facepull",name:"Face pulls",                   sets:3, reps:"15",  rest:"90s", note:"Salud escapular" },
+    { id:"swing",   name:"Kettlebell swings (finisher)", sets:4, reps:"20",  rest:"45s", note:"Explosivo, cadera hacia adelante" },
+  ],
+  C: [
+    { id:"frontsq", name:"Sentadilla frontal / Hack squat", sets:4, reps:"6",  rest:"90s", note:"" },
+    { id:"incline", name:"Press inclinado mancuernas",       sets:3, reps:"10", rest:"90s", note:"" },
+    { id:"pullover",name:"Pull-over en polea",               sets:3, reps:"12", rest:"90s", note:"Gran serrato y dorsal" },
+    { id:"lunge",   name:"Zancadas con mancuernas",          sets:3, reps:"10", rest:"90s", note:"Cada pierna" },
+    { id:"core",    name:"Circuito core (finisher)",         sets:3, reps:null, rest:"45s", note:"Plancha 30s + ab wheel ×10 + mountain climbers ×20" },
+  ]
+};
+
+const ALL_EXERCISES = Object.values(ROUTINES).flat();
+
+let currentRoutine = "A";
+let weights = {};
+
+// ---- STORAGE ----
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem("entreno_history") || "[]"); } catch(e) { return []; }
+}
+function saveHistory(h) {
+  localStorage.setItem("entreno_history", JSON.stringify(h));
+}
+
+// Seed initial session if empty
+(function() {
+  let h = loadHistory();
+  if (h.length === 0) {
+    h = [{
+      id: Date.now() - 172800000,
+      routine: "A",
+      date: new Date(Date.now() - 172800000).toISOString(),
+      weights: { squat:"45", bench:"60", row:"50", dips:"10", goblet:"24" },
+      notes: "Primera sesión. Sentadilla: series 1-2 a 40kg, series 3-4 a 45kg."
+    }];
+    saveHistory(h);
+  }
+})();
+
+// ---- TABS ----
+function showTab(name) {
+  ["log","history","progress"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = t===name ? "block" : "none";
+    document.querySelectorAll(".tab")[["log","history","progress"].indexOf(t)].classList.toggle("active", t===name);
+  });
+  if (name === "history") renderHistory();
+  if (name === "progress") renderProgress();
+}
+
+// ---- ROUTINE ----
+function selectRoutine(r) {
+  currentRoutine = r;
+  weights = {};
+  document.querySelectorAll(".routine-btn").forEach((b,i) => b.classList.toggle("active", ["A","B","C"][i]===r));
+  renderExercises();
+}
+
+function getLastWeight(exId) {
+  const h = loadHistory();
+  for (const entry of h) {
+    if (entry.routine === currentRoutine && entry.weights[exId]) return entry.weights[exId];
+  }
+  return null;
+}
+
+function renderExercises() {
+  const list = document.getElementById("exercise-list");
+  list.innerHTML = "";
+  ROUTINES[currentRoutine].forEach(ex => {
+    const last = getLastWeight(ex.id);
+    const card = document.createElement("div");
+    card.className = "ex-card";
+    card.innerHTML = `
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-meta">${ex.sets} series × ${ex.reps ? ex.reps+" reps" : "1 ronda"} · descanso ${ex.rest}</div>
+      ${ex.note ? `<div class="ex-note">${ex.note}</div>` : ""}
+      <div class="ex-input-row">
+        <input class="ex-input" type="number" inputmode="decimal" placeholder="kg" id="w-${ex.id}" value="${weights[ex.id]||""}" onchange="weights['${ex.id}']=this.value">
+        ${last ? `<div class="ex-prev"><div class="ex-prev-label">ANTERIOR</div><div class="ex-prev-val">${last} kg</div></div>` : ""}
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ---- SAVE ----
+function saveSession() {
+  // collect from inputs
+  ROUTINES[currentRoutine].forEach(ex => {
+    const el = document.getElementById("w-"+ex.id);
+    if (el && el.value) weights[ex.id] = el.value;
+  });
+  if (Object.keys(weights).length === 0) return;
+  const h = loadHistory();
+  h.unshift({
+    id: Date.now(),
+    routine: currentRoutine,
+    date: new Date().toISOString(),
+    weights: {...weights},
+    notes: document.getElementById("session-notes").value
+  });
+  saveHistory(h);
+  weights = {};
+  document.getElementById("session-notes").value = "";
+  renderExercises();
+  const btn = document.getElementById("save-btn");
+  btn.textContent = "✓ Guardado";
+  btn.classList.add("saved");
+  setTimeout(() => { btn.textContent = "Guardar sesión"; btn.classList.remove("saved"); }, 2500);
+}
+
+// ---- HISTORY ----
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString("es-ES", {day:"2-digit", month:"short", year:"numeric"});
+}
+
+function renderHistory() {
+  const h = loadHistory();
+  const el = document.getElementById("history-list");
+  if (h.length === 0) { el.innerHTML = '<p class="empty-state">No hay sesiones registradas aún.</p>'; return; }
+  el.innerHTML = '<div class="history-list">' + h.map(entry => {
+    const chips = Object.entries(entry.weights).map(([id, kg]) => {
+      const ex = ALL_EXERCISES.find(e=>e.id===id);
+      return `<div class="weight-chip"><div class="weight-chip-name">${(ex?.name||id).split(" ")[0]}</div><div class="weight-chip-val">${kg} kg</div></div>`;
+    }).join("");
+    return `<div class="hist-card">
+      <div class="hist-top">
+        <span class="routine-badge">Día ${entry.routine}</span>
+        <span class="hist-date">${formatDate(entry.date)}</span>
+      </div>
+      <div class="weights-grid">${chips}</div>
+      ${entry.notes ? `<div class="hist-notes">${entry.notes}</div>` : ""}
+    </div>`;
+  }).join("") + "</div>";
+}
+
+// ---- PROGRESS ----
+function getProgress(exId) {
+  return loadHistory()
+    .filter(e => e.weights[exId])
+    .map(e => ({ date: formatDate(e.date), weight: parseFloat(e.weights[exId])||0 }))
+    .reverse();
+}
+
+function renderProgress() {
+  const el = document.getElementById("progress-content");
+  el.innerHTML = ["A","B","C"].map(rk => {
+    const cards = ROUTINES[rk].map(ex => {
+      const prog = getProgress(ex.id);
+      if (prog.length === 0) return `<div class="prog-card-empty"><span style="font-size:14px;color:#3a3a3a">${ex.name}</span><span style="font-size:11px;color:#3a3a3a">Sin datos</span></div>`;
+      const latest = prog[prog.length-1];
+      const first = prog[0];
+      const diff = latest.weight - first.weight;
+      const max = Math.max(...prog.map(p=>p.weight));
+      const min = Math.min(...prog.map(p=>p.weight)) * 0.9;
+      const bars = prog.length > 1 ? `<div class="mini-bars">${prog.map((p,i) => {
+        const h = ((p.weight-min)/(max-min||1))*28+4;
+        return `<div class="mini-bar${i===prog.length-1?" latest":""}" style="height:${h}px" title="${p.date}: ${p.weight}kg"></div>`;
+      }).join("")}</div>` : "";
+      const diffHtml = diff !== 0 && prog.length > 1
+        ? `<div class="prog-diff ${diff>0?"up":"down"}">${diff>0?"+":""}${diff.toFixed(1)} kg</div>` : "";
+      return `<div class="prog-card">
+        <div class="prog-top">
+          <div><div class="prog-name">${ex.name}</div><div class="prog-sessions">${prog.length} sesión${prog.length!==1?"es":""}</div></div>
+          <div><div class="prog-weight">${latest.weight} kg</div>${diffHtml}</div>
+        </div>
+        ${bars}
+      </div>`;
+    }).join("");
+    return `<div class="progress-section"><p class="progress-label">Rutina ${rk}</p><div class="prog-cards">${cards}</div></div>`;
+  }).join("");
+}
+
+// ---- INIT ----
+renderExercises();
+</script>
+</body>
+</html>

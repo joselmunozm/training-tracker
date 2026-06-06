@@ -132,6 +132,7 @@
       <button class="routine-btn active" onclick="selectRoutine('A')">A</button>
       <button class="routine-btn" onclick="selectRoutine('B')">B</button>
       <button class="routine-btn" onclick="selectRoutine('C')">C</button>
+      <button class="routine-btn" onclick="selectRoutine('D')">D</button>
     </div>
     <div class="exercises" id="exercise-list"></div>
     <textarea id="session-notes" rows="3" placeholder="Notas del entreno (opcional)..."></textarea>
@@ -171,6 +172,15 @@ const ROUTINES = {
     { id:"pullover",name:"Pull-over en polea",               sets:3, reps:"12", rest:"90s", note:"Gran serrato y dorsal" },
     { id:"lunge",   name:"Zancadas con mancuernas",          sets:3, reps:"10", rest:"90s", note:"Cada pierna" },
     { id:"core",    name:"Circuito core (finisher)",         sets:3, reps:null, rest:"45s", note:"Plancha 30s + ab wheel ×10 + mountain climbers ×20" },
+  ],
+  D: [
+    { id:"ohp_db",    name:"Press militar mancuernas",         sets:3, reps:"10", rest:"90s", note:"Sentado, más aislamiento que de pie" },
+    { id:"lateral",   name:"Elevaciones laterales",            sets:3, reps:"12", rest:"90s", note:"Peso ligero, codos ligeramente doblados" },
+    { id:"curl_bar",  name:"Curl de bíceps con barra",         sets:3, reps:"10", rest:"90s", note:"Sin balanceo de espalda" },
+    { id:"curl_ham",  name:"Curl martillo con mancuernas",     sets:3, reps:"10", rest:"90s", note:"Agarre neutro, trabaja el braquial" },
+    { id:"french",    name:"Press francés con barra",          sets:3, reps:"10", rest:"90s", note:"Tumbado, barra baja hacia la frente" },
+    { id:"tricep_cable", name:"Extensiones tríceps en polea",  sets:3, reps:"12", rest:"90s", note:"Codos pegados al cuerpo" },
+    { id:"superset",  name:"Superserie curl + extensión (finisher)", sets:3, reps:"15", rest:"45s", note:"Sin descanso entre curl y extensión" },
   ]
 };
 
@@ -216,7 +226,7 @@ function showTab(name) {
 function selectRoutine(r) {
   currentRoutine = r;
   weights = {};
-  document.querySelectorAll(".routine-btn").forEach((b,i) => b.classList.toggle("active", ["A","B","C"][i]===r));
+  document.querySelectorAll(".routine-btn").forEach((b,i) => b.classList.toggle("active", ["A","B","C","D"][i]===r));
   renderExercises();
 }
 
@@ -308,7 +318,7 @@ function getProgress(exId) {
 
 function renderProgress() {
   const el = document.getElementById("progress-content");
-  el.innerHTML = ["A","B","C"].map(rk => {
+  el.innerHTML = ["A","B","C","D"].map(rk => {
     const cards = ROUTINES[rk].map(ex => {
       const prog = getProgress(ex.id);
       if (prog.length === 0) return `<div class="prog-card-empty"><span style="font-size:14px;color:#3a3a3a">${ex.name}</span><span style="font-size:11px;color:#3a3a3a">Sin datos</span></div>`;
